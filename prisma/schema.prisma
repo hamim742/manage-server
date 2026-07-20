@@ -11,16 +11,19 @@ datasource db {
 // USER
 // ─────────────────────────────────────────
 model User {
-  id         String   @id @default(uuid())
-  name       String
-  email      String   @unique
-  password   String
-  role       Role     @default(user)
-  status     Status   @default(active)
-  isVerified Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  orders     Order[]
+  id               String         @id @default(uuid())
+  name             String
+  email            String         @unique
+  password         String
+  role             Role           @default(user)
+  status           Status         @default(active)
+  isVerified       Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  orders           Order[]
+  sentMessages     ChatMessage[]  @relation("SentMessages")
+  receivedMessages ChatMessage[]  @relation("ReceivedMessages")
+  notifications    Notification[]
 
   @@map("users")
 }
@@ -99,6 +102,41 @@ model PaymentSetting {
   updatedAt  DateTime @updatedAt
 
   @@map("payment_settings")
+}
+
+// ─────────────────────────────────────────
+// CHAT MESSAGE
+// ─────────────────────────────────────────
+model ChatMessage {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  message    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@map("chat_messages")
+}
+
+// ─────────────────────────────────────────
+// NOTIFICATION
+// ─────────────────────────────────────────
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?  // null = admin notification
+  title     String
+  message   String
+  type      String   // NEW_ORDER, CHAT_MESSAGE, ORDER_STATUS
+  linkUrl   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
 }
 
 // ─────────────────────────────────────────

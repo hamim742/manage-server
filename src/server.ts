@@ -2,6 +2,7 @@ import { Server } from "http";
 import app from "./app";
 import config from "./config";
 import { connectedDB } from "./app/db/connected.db";
+import { initSocket } from "./app/lib/socket";
 
 let server: Server;
 const port = config.port;
@@ -11,6 +12,7 @@ const main = () => {
     console.log(`Server running on http://localhost:${port}`);
   });
 
+  initSocket(server);
   connectedDB();
 
   const exitHandler = () => {

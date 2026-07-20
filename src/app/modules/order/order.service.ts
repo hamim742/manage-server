@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { PlaceOrderInput } from "./order.validation";
+import { getIO } from "../../lib/socket";
 
 // User places an order
 export const placeOrder = async (userId: string, data: PlaceOrderInput) => {
@@ -38,8 +39,29 @@ export const placeOrder = async (userId: string, data: PlaceOrderInput) => {
     },
     include: {
       product: { select: { id: true, title: true, price: true, thumbnail: true } },
+      user: { select: { id: true, name: true, email: true } },
     },
   });
+
+  // Create Notification in DB for Admin
+  try {
+    const notification = await prisma.notification.create({
+      data: {
+        userId: null, // Admin
+        title: "🛒 New Order Received!",
+        message: `${order.user.name} ordered ${quantity}x ${order.product.title} (৳${order.totalAmount}) via ${paymentMethod}`,
+        type: "NEW_ORDER",
+        linkUrl: "/dashboard/orders",
+      },
+    });
+
+    // Real-time broadcast to Admin Room
+    const io = getIO();
+    io.to("admin_room").emit("new_order", { order, notification });
+    io.to("admin_room").emit("new_notification", notification);
+  } catch (socketErr) {
+    console.error("Socket emit error on placeOrder:", socketErr);
+  }
 
   return order;
 };
@@ -142,6 +164,25 @@ export const approveOrder = async (orderId: string) => {
     });
   });
 
+  // Notify User
+  try {
+    const notification = await prisma.notification.create({
+      data: {
+        userId: updatedOrder.userId,
+        title: "🎉 Order Approved!",
+        message: `Your order for ${updatedOrder.product.title} has been approved. Links are now available in My Orders!`,
+        type: "ORDER_STATUS",
+        linkUrl: "/orders",
+      },
+    });
+
+    const io = getIO();
+    io.to(`user_${updatedOrder.userId}`).emit("order_updated", updatedOrder);
+    io.to(`user_${updatedOrder.userId}`).emit("new_notification", notification);
+  } catch (err) {
+    console.error("Socket emit error on approveOrder:", err);
+  }
+
   return updatedOrder;
 };
 
@@ -159,10 +200,32 @@ export const rejectOrder = async (orderId: string, adminNote?: string) => {
     throw error;
   }
 
-  return prisma.order.update({
+  const rejectedOrder = await prisma.order.update({
     where: { id: orderId },
     data: { status: "REJECTED", adminNote },
+    include: { product: { select: { title: true } } },
   });
+
+  // Notify User
+  try {
+    const notification = await prisma.notification.create({
+      data: {
+        userId: rejectedOrder.userId,
+        title: "❌ Order Rejected",
+        message: `Your order for ${rejectedOrder.product.title} was rejected. ${adminNote ? `Reason: ${adminNote}` : ""}`,
+        type: "ORDER_STATUS",
+        linkUrl: "/orders",
+      },
+    });
+
+    const io = getIO();
+    io.to(`user_${rejectedOrder.userId}`).emit("order_updated", rejectedOrder);
+    io.to(`user_${rejectedOrder.userId}`).emit("new_notification", notification);
+  } catch (err) {
+    console.error("Socket emit error on rejectOrder:", err);
+  }
+
+  return rejectedOrder;
 };
 
 // Admin: stats summary

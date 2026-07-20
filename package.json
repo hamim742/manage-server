@@ -1,7 +1,7 @@
 {
   "name": "manage-server",
   "version": "1.0.0",
-  "description": "Express + Prisma + MongoDB modern backend boilerplate.",
+  "description": "Express + Prisma + PostgreSQL modern backend boilerplate.",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
@@ -12,7 +12,7 @@
   "keywords": [
     "express",
     "prisma",
-    "mongodb",
+    "postgresql",
     "boilerplate",
     "server",
     "typescript"

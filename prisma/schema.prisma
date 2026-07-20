@@ -7,6 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────
 model User {
   id         String   @id @default(uuid())
   name       String
@@ -17,10 +20,90 @@ model User {
   isVerified Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  orders     Order[]
 
   @@map("users")
 }
 
+// ─────────────────────────────────────────
+// PRODUCT
+// ─────────────────────────────────────────
+model Product {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  price       Float
+  thumbnail   String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  links       Link[]
+  orders      Order[]
+
+  @@map("products")
+}
+
+// ─────────────────────────────────────────
+// LINK (inventory — one row per link)
+// ─────────────────────────────────────────
+model Link {
+  id        String   @id @default(uuid())
+  url       String
+  productId String
+  isUsed    Boolean  @default(false)
+  orderId   String?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order     Order?   @relation(fields: [orderId], references: [id])
+
+  @@map("links")
+}
+
+// ─────────────────────────────────────────
+// ORDER
+// ─────────────────────────────────────────
+model Order {
+  id            String        @id @default(uuid())
+  userId        String
+  productId     String
+  quantity      Int
+  totalAmount   Float
+  status        OrderStatus   @default(PENDING)
+  // payment info
+  transactionId String
+  senderNumber  String
+  amountPaid    Float
+  paymentMethod PaymentMethod
+  // admin note (optional reject reason)
+  adminNote     String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  links   Link[]
+
+  @@map("orders")
+}
+
+// ─────────────────────────────────────────
+// PAYMENT SETTINGS
+// ─────────────────────────────────────────
+model PaymentSetting {
+  id         String   @id @default(uuid())
+  method     String   // e.g. bKash, Nagad, Rocket
+  number     String
+  qrImageUrl String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("payment_settings")
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
 enum Status {
   active
   inactive
@@ -30,4 +113,17 @@ enum Status {
 enum Role {
   user
   admin
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentMethod {
+  BKASH
+  NAGAD
+  ROCKET
+  BANK
 }

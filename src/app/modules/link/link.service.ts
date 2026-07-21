@@ -51,6 +51,17 @@ export const deleteLink = async (id: string) => {
   return prisma.link.delete({ where: { id } });
 };
 
+// Admin: delete selected unused links
+export const deleteSelectedLinks = async (ids: string[]) => {
+  const result = await prisma.link.deleteMany({
+    where: {
+      id: { in: ids },
+      isUsed: false,
+    },
+  });
+  return { deleted: result.count };
+};
+
 // Admin: delete all unused links for a product
 export const deleteAllUnusedLinks = async (productId: string) => {
   const result = await prisma.link.deleteMany({
@@ -58,3 +69,5 @@ export const deleteAllUnusedLinks = async (productId: string) => {
   });
   return { deleted: result.count };
 };
+
+

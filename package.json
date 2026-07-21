@@ -4,11 +4,11 @@
   "description": "Express + Prisma + PostgreSQL modern backend boilerplate.",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
-    "build": "prisma generate && tsc",
+    "dev": "node init && ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
+    "build": "node init && prisma generate && tsc",
     "postinstall": "prisma generate",
     "seed": "ts-node prisma/seed.ts",
-    "start": "node dist/server.js"
+    "start": "node init && node dist/server.js"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -34,6 +34,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.2.0",
+    "node-fetch": "^3.3.2",
     "socket.io": "^4.8.3",
     "zod": "^3.23.8"
   },

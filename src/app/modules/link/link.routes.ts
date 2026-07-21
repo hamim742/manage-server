@@ -8,6 +8,8 @@ export const linkRoutes = Router();
 linkRoutes.use(authenticate, authorizeAdmin);
 
 linkRoutes.post("/bulk", linkController.bulkAddLinks);
+linkRoutes.post("/delete-many", linkController.deleteSelectedLinks);
 linkRoutes.get("/", linkController.getLinksByProduct);
 linkRoutes.delete("/clear", linkController.deleteAllUnusedLinks);
 linkRoutes.delete("/:id", linkController.deleteLink);
+

@@ -37,3 +37,14 @@ export const deleteAllUnusedLinks = catchAsync(async (req: Request, res: Respons
   const result = await linkService.deleteAllUnusedLinks(productId);
   sendResponse(res, { success: true, statusCode: 200, message: `${result.deleted} links deleted`, data: result });
 });
+
+const deleteSelectedSchema = z.object({
+  ids: z.array(z.string()).min(1, "At least one link ID is required"),
+});
+
+export const deleteSelectedLinks = catchAsync(async (req: Request, res: Response) => {
+  const { ids } = deleteSelectedSchema.parse(req.body);
+  const result = await linkService.deleteSelectedLinks(ids);
+  sendResponse(res, { success: true, statusCode: 200, message: `${result.deleted} links deleted`, data: result });
+});
+

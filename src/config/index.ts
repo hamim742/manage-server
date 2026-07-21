@@ -14,4 +14,10 @@ export default {
     email: process.env.ADMIN_EMAIL || "admin@gmail.com",
     password: process.env.ADMIN_PASSWORD || "admin123456",
   },
+  cloudinary: {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "demo",
+    api_key: process.env.CLOUDINARY_API_KEY || "",
+    api_secret: process.env.CLOUDINARY_API_SECRET || "",
+  },
 };
+

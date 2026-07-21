@@ -7,6 +7,7 @@ import { paymentRoutes } from "../modules/payment/payment.routes";
 import { userRoutes } from "../modules/user/user.routes";
 import { chatRoutes } from "../modules/chat/chat.routes";
 import { notificationRoutes } from "../modules/notification/notification.routes";
+import { uploadRoutes } from "../modules/upload/upload.routes";
 
 export const router = Router();
 
@@ -19,7 +20,9 @@ const routes = [
   { path: "/users", route: userRoutes },
   { path: "/chat", route: chatRoutes },
   { path: "/notifications", route: notificationRoutes },
+  { path: "/upload", route: uploadRoutes },
 ];
+
 
 routes.forEach((route) => {
   router.use(route.path, route.route);
